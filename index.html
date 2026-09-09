@@ -157,7 +157,16 @@
                     headers: { 'X-Master-Key': API_KEY }
                 });
                 const result = await response.json();
-                const leaderboard = result.record.leaderboard || [];
+                
+                let leaderboard = [];
+                if (result.record) {
+                    if (Array.isArray(result.record)) {
+                        leaderboard = result.record;
+                    } else if (result.record.leaderboard && Array.isArray(result.record.leaderboard)) {
+                        leaderboard = result.record.leaderboard;
+                    }
+                }
+                
                 leaderboard.sort((a, b) => b.score - a.score);
                 
                 const lbContainer = document.getElementById('global-leaderboard');
@@ -172,14 +181,18 @@
                         <div class="flex justify-between items-center bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800/50">
                             <div class="flex items-center space-x-2 truncate">
                                 <i class="fa-solid fa-trophy ${medalColor} text-xs"></i>
-                                <span class="text-slate-200 font-semibold truncate max-w-[120px]">${item.name}</span>
+                                <span class="text-slate-200 font-semibold truncate max-w-[120px]">${item.name || 'Ẩn danh'}</span>
                             </div>
-                            <span class="text-amber-400 font-black">${item.score} Điểm</span>
+                            <span class="text-amber-400 font-black">${item.score || 0} Điểm</span>
                         </div>
                     `;
                 }).join('');
             } catch (error) {
                 console.error("Lỗi tải bảng xếp hạng:", error);
+                const lbContainer = document.getElementById('global-leaderboard');
+                if (lbContainer) {
+                    lbContainer.innerHTML = `<p class="text-rose-400 text-center italic py-2">Không thể kết nối máy chủ.</p>`;
+                }
             }
         }
 
@@ -189,7 +202,15 @@
                     headers: { 'X-Master-Key': API_KEY }
                 });
                 const getResult = await getRes.json();
-                let leaderboard = getResult.record.leaderboard || [];
+                
+                let leaderboard = [];
+                if (getResult.record) {
+                    if (Array.isArray(getResult.record)) {
+                        leaderboard = getResult.record;
+                    } else if (getResult.record.leaderboard && Array.isArray(getResult.record.leaderboard)) {
+                        leaderboard = getResult.record.leaderboard;
+                    }
+                }
 
                 leaderboard.push({ name: playerName, score: playerScore, date: new Date().toLocaleDateString('vi-VN') });
 
@@ -256,21 +277,3 @@
                 shuffle(opts);
                 keys.forEach((k, idx) => q[k.toLowerCase()] = opts[idx].text);
                 q.correct = keys[opts.findIndex(o => o.isCorrect)];
-                return q;
-            });
-        }
-
-        function initMoneyLadder() {
-            const ladderEl = document.getElementById('money-ladder');
-            ladderEl.innerHTML = Array.from({length: 10}, (_, i) => {
-                const step = i + 1, isMilestone = step === 5 || step === 10;
-                return `<div id="ladder-step-${step}" class="money-tree-item px-3 py-1.5 flex justify-between border-b border-slate-800/40 ${isMilestone ? 'milestone text-sky-400 font-bold' : 'text-slate-400'}"><span>Câu ${step}</span><span>${step * 10} Điểm</span></div>`;
-            }).reverse().join('');
-        }
-
-        function startGame() {
-            const nameInput = document.getElementById('player-name').value.trim();
-            playerName = nameInput !== "" ? nameInput : "Cao thủ Hóa học";
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            questionsDat
