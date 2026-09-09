@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đấu Trường Hóa Học 12 - Global Leaderboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Confetti for Winning -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <!-- MathJax for Chemistry Formulas -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        .btn-lifeline {
+            width: 2.75rem; height: 2.75rem; border-radius: 0.75rem; background-color: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(51, 65, 85, 0.8); color: #fbbf24; font-weight: 700; display: flex;
+            align-items: center; justify-content: center; transition: all 0.2s ease; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .btn-lifeline:hover:not(:disabled) { background-color: #f59e0b; color: #020617; transform: scale(1.05); }
+        .btn-lifeline:disabled { opacity: 0.2; pointer-events: none; }
+        
+        .btn-answer {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            border: 1px solid #334155; border-radius: 1rem; transition: all 0.25s ease;
+        }
+        .btn-answer:hover:not(:disabled) {
+            border-color: #f59e0b; background: linear-gradient(135deg, #1e293b 100%, #312e81 100%);
+            transform: translateY(-2px); box-shadow: 0 6px 15px -3px rgba(245, 158, 11, 0.15);
+        }
+        .btn-answer.selected { background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; color: #fff !important; border-color: #fbbf24 !important; }
+        .btn-answer.correct { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important; color: #fff !important; border-color: #4ade80 !important; }
+        .btn-answer.wrong { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important; color: #fff !important; border-color: #f87171 !important; }
+        
+        .money-tree-item.active { background: linear-gradient(90deg, #d97706, #b45309); color: #020617 !important; border-radius: 0.5rem; font-weight: 900; }
+        .money-tree-item.milestone { color: #38bdf8 !important; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100 min-h-screen flex flex-col font-['Montserrat',sans-serif]">
+
+    <!-- Header -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-30 shadow-xl">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                <i class="fa-solid fa-flask text-slate-950 text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg md:text-xl font-extrabold bg-gradient-to-r from-amber-400 via-amber-200 to-yellow-400 bg-clip-text text-transparent">ĐẤU TRƯỜNG HÓA HỌC</h1>
+                <p class="text-xs text-slate-400 font-medium">Bảng Xếp Hạng Toàn Cầu</p>
+            </div>
+        </div>
+        <button id="btn-sound" onclick="toggleSound()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-amber-400 flex items-center justify-center">
+            <i class="fa-solid fa-volume-high"></i>
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 flex flex-col justify-center items-center p-4 md:p-6 max-w-6xl mx-auto w-full">
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center bg-slate-900/90 backdrop-blur-xl p-6 md:p-10 rounded-3xl border border-slate-800 shadow-2xl max-w-xl w-full relative overflow-hidden">
+            <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl mx-auto flex items-center justify-center shadow-xl shadow-amber-500/20 mb-4">
+                <i class="fa-solid fa-globe text-4xl text-slate-950"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-white mb-2">Đấu Trường Hóa Học 12</h2>
+            <p class="text-slate-300 text-xs md:text-sm mb-6">Chinh phục 10 câu hỏi và ghi tên lên bảng vàng toàn cầu trực tuyến!</p>
+            
+            <div class="mb-5">
+                <input type="text" id="player-name" placeholder="Nhập tên của bạn..." maxlength="20" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-center text-slate-100 font-semibold focus:outline-none focus:border-amber-400 text-sm">
+            </div>
+
+            <button onclick="startGame()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-extrabold rounded-xl text-base shadow-lg shadow-amber-500/30 transition-all mb-6">
+                <i class="fa-solid fa-play mr-2"></i> BẮT ĐẦU CHƠI NGAY
+            </button>
+
+            <!-- Global Leaderboard -->
+            <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 text-left">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center">
+                        <i class="fa-solid fa-trophy mr-1.5"></i> Bảng Xếp Hạng Trực Tuyến
+                    </span>
+                    <span class="text-[10px] text-emerald-400"><i class="fa-solid fa-circle text-[8px] animate-pulse"></i> Live Server</span>
+                </div>
+                <div id="global-leaderboard" class="space-y-1.5 text-xs max-h-40 overflow-y-auto">
+                    <p class="text-slate-500 text-center italic py-2">Đang tải dữ liệu từ máy chủ...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="w-full hidden grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+            <div class="lg:col-span-3 flex flex-col space-y-5">
+                <div class="bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">CÂU HỎI <span id="current-question-num" class="text-amber-400 text-sm">1</span>/10</span>
+                        <span id="current-prize" class="text-2xl font-black text-amber-400">0 Điểm</span>
+                    </div>
+                    <div id="timer-display" class="w-14 h-14 rounded-2xl bg-slate-950 border-2 border-amber-400 flex items-center justify-center font-black text-2xl text-amber-400">30</div>
+                    <div class="flex space-x-2">
+                        <button id="life-5050" onclick="use5050()" class="btn-lifeline">50:50</button>
+                        <button id="life-phone" onclick="usePhone()" class="btn-lifeline"><i class="fa-solid fa-phone text-sm"></i></button>
+                        <button id="life-audience" onclick="useAudience()" class="btn-lifeline"><i class="fa-solid fa-users text-sm"></i></button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-slate-800 shadow-xl min-h-[160px] flex items-center justify-center relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-amber-500 to-yellow-600"></div>
+                    <p id="question-text" class="text-lg md:text-xl text-center font-semibold leading-relaxed text-slate-100"></p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button id="btn-a" onclick="selectAnswer('A')" class="btn-answer p-4 text-left font-semibold text-slate-200 flex items-center space-x-3"><span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-amber-400 font-bold shrink-0">A</span><span id="text-a" class="flex-1"></span></button>
+                    <button id="btn-b" onclick="selectAnswer('B')" class="btn-answer p-4 text-left font-semibold text-slate-200 flex items-center space-x-3"><span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-amber-400 font-bold shrink-0">B</span><span id="text-b" class="flex-1"></span></button>
+                    <button id="btn-c" onclick="selectAnswer('C')" class="btn-answer p-4 text-left font-semibold text-slate-200 flex items-center space-x-3"><span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-amber-400 font-bold shrink-0">C</span><span id="text-c" class="flex-1"></span></button>
+                    <button id="btn-d" onclick="selectAnswer('D')" class="btn-answer p-4 text-left font-semibold text-slate-200 flex items-center space-x-3"><span class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-amber-400 font-bold shrink-0">D</span><span id="text-d" class="flex-1"></span></button>
+                </div>
+
+                <div class="flex justify-between pt-2">
+                    <button onclick="stopGame()" class="px-4 py-2.5 bg-slate-900 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-semibold flex items-center space-x-2"><i class="fa-solid fa-flag"></i><span>Dừng cuộc chơi</span></button>
+                    <button onclick="restartGameConfirm()" class="px-4 py-2.5 bg-slate-900 text-sky-400 border border-sky-500/30 rounded-xl text-xs font-semibold flex items-center space-x-2"><i class="fa-solid fa-rotate-right"></i><span>Chơi lại</span></button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/90 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                    <h3 class="font-extrabold text-slate-300 text-xs uppercase"><i class="fa-solid fa-chart-line text-amber-400 mr-1.5"></i> Thang Điểm</h3>
+                </div>
+                <div id="money-ladder" class="flex flex-col-reverse text-xs font-bold space-y-1 space-y-reverse"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="modal-gameover" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl max-w-md w-full text-center shadow-2xl">
+            <div class="w-16 h-16 bg-amber-500/10 border border-amber-500/20 rounded-2xl mx-auto flex items-center justify-center text-amber-400 text-3xl mb-4"><i class="fa-solid fa-trophy" id="end-icon"></i></div>
+            <h2 id="end-title" class="text-2xl font-extrabold text-white mb-1"></h2>
+            <p id="end-subtitle" class="text-slate-400 text-xs mb-6"></p>
+            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 mb-5">
+                <span id="final-prize" class="text-3xl font-black text-amber-400">0 Điểm</span>
+            </div>
+            <button onclick="resetGame()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-extrabold rounded-xl">VỀ TRANG CHỦ</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK & Game Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        // --- DÁN CẤU HÌNH FIREBASE CỦA BẠN VÀO ĐÂY ---
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Lưu điểm lên Cloud
+        window.saveScoreToCloud = function(name, score) {
+            const scoresRef = ref(db, 'global_leaderboard');
+            const newScoreRef = push(scoresRef);
+            set(newScoreRef, { name: name, score: score, date: new Date().toLocaleDateString('vi-VN') });
+        };
+
+        // Lắng nghe thay đổi bảng xếp hạng thời gian thực từ mọi máy
+        onValue(ref(db, 'global_leaderboard'), (snapshot) => {
+            const data = snapshot.val();
+            const lbContainer = document.getElementById('global-leaderboard');
+            if (!lbContainer) return;
+
+            if (!data) {
+                lbContainer.innerHTML = `<p class="text-slate-500 text-center italic py-2">Chưa có dữ liệu trực tuyến.</p>`;
+                return;
+            }
+
+            let leaderboard = Object.values(data);
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard = leaderboard.slice(0, 10); // Lấy top 10 toàn cầu
+
+            lbContainer.innerHTML = leaderboard.map((item, index) => {
+                let medalColor = index === 0 ? "text-amber-400" : (index === 1 ? "text-slate-300" : (index === 2 ? "text-amber-600" : "text-slate-500"));
+                return `
+                    <div class="flex justify-between items-center bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800/50">
+                        <div class="flex items-center space-x-2 truncate">
+                            <i class="fa-solid fa-trophy ${medalColor} text-xs"></i>
+                            <span class="text-slate-200 font-semibold truncate max-w-[120px]">${item.name}</span>
+                        </div>
+                        <span class="text-amber-400 font-black">${item.score} Điểm</span>
+                    </div>
+                `;
+            }).join('');
+        });
+    </script>
+
+    <!-- Game Core Script -->
+    <script>
+        const originalQuestions = [
+            { q: "Khái niệm nào sau đây đúng về chất béo?", opts: ["Chất béo là trieste của glixerol với các axit béo.", "Chất béo là este của ancol đa chức với các axit hữu cơ.", "Chất béo là trieste của ancol metylic với các axit béo.", "Chất béo là phức chất của glixerol với các axit béo."], exp: "Chất béo là trieste của glixerol với các axit béo." },
+            { q: "Công thức hóa học chung của triaxitglixerol là gì?", opts: ["(RCOO)3C3H5", "RCOOC3H5", "(RCOO)2C3H5", "R(COOC3H5)3"], exp: "Công thức tổng quát là (RCOO)3C3H5." },
+            { q: "Axit nào sau đây là axit béo no?", opts: ["Axit stearic (C17H35COOH)", "Axit oleic (C17H33COOH)", "Axit linoleic (C17H31COOH)", "Axit acrylic (C2H3COOH)"], exp: "Axit stearic (C17H35COOH) là axit béo no." },
+            { q: "Triolein có công thức cấu tạo thu gọn là gì?", opts: ["(C17H33COO)3C3H5", "(C17H35COO)3C3H5", "(C15H31COO)3C3H5", "(C17H31COO)3C3H5"], exp: "Triolein tạo bởi glixerol và axit oleic." },
+            { q: "Ở nhiệt độ thường, chất béo nào sau đây ở trạng thái lỏng?", opts: ["Triolein", "Tristearin", "Tripalmitin", "Mỡ lợn"], exp: "Triolein chứa gốc axit béo không no nên ở thể lỏng." },
+            { q: "Phản ứng thủy phân chất béo trong môi trường kiềm gọi là gì?", opts: ["Phản ứng xà phòng hóa", "Phản ứng este hóa", "Phản ứng tráng bạc", "Phản ứng trùng hợp"], exp: "Thủy phân trong kiềm thu được xà phòng." },
+            { q: "Đun nóng triolein với dung dịch NaOH dư thu được sản phẩm gồm:", opts: ["C17H33COONa và C3H5(OH)3", "C17H35COONa và C3H5(OH)3", "C15H31COONa và C3H5(OH)3", "C17H33COOH và C3H5(OH)3"], exp: "Thu được muối natri oleat và glixerol." },
+            { q: "Phản ứng chuyển hóa chất béo lỏng thành chất béo rắn là:", opts: ["Phản ứng hydro hóa", "Phản ứng xà phòng hóa", "Phản ứng brom hóa", "Phản ứng thủy phân"], exp: "Cộng H2 vào liên kết đôi." },
+            { q: "Thành phần chính của xà phòng thông thường là gì?", opts: ["Muối natri hoặc kali của axit béo", "Muối canxi hoặc magie", "Muối natri của axit sunfonic", "Muối cacbonat"], exp: "Muối Na/K của axit béo." },
+            { q: "Ưu điểm vượt trội của chất giặt rửa tổng hợp là gì?", opts: ["Dùng được trong nước cứng", "Dễ phân hủy sinh học", "Không hại da tay", "Sản xuất từ thiên nhiên"], exp: "Không tạo kết tủa với ion Ca2+, Mg2+." }
+        ];
+
+        let questionsData = [], currentQuestionIdx = 0, userScore = 0, timer = null, timeLeft = 30, isAnswering = false, soundEnabled = true;
+        let playerName = "Ẩn danh";
+        const lifelines = { '5050': true, 'phone': true, 'audience': true };
+        const keys = ['A', 'B', 'C', 'D'];
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTone(freq, type = 'sine', duration = 0.2) {
+            if (!soundEnabled) return;
+            try {
+                const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('btn-sound').innerHTML = soundEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark text-rose-500"></i>';
+        }
+
+        const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+
+        function prepareShuffledQuestions(questions) {
+            return shuffle(JSON.parse(JSON.stringify(questions))).map(q => {
+                let opts = q.opts.map((opt, i) => ({ text: opt, isCorrect: i === 0 }));
+                shuffle(opts);
+                keys.forEach((k, idx) => q[k.toLowerCase()] = opts[idx].text);
+                q.correct = keys[opts.findIndex(o => o.isCorrect)];
+                return q;
+            });
+        }
+
+        function initMoneyLadder() {
+            const ladderEl = document.getElementById('money-ladder');
+            ladderEl.innerHTML = Array.from({length: 10}, (_, i) => {
+                const step = i + 1, isMilestone = step === 5 || step === 10;
+                return `<div id="ladder-step-${step}" class="money-tree-item px-3 py-1.5 flex justify-between border-b border-slate-800/40 ${isMilestone ? 'milestone text-sky-400 font-bold' : 'text-slate-400'}"><span>Câu ${step}</span><span>${step * 10} Điểm</span></div>`;
+            }).reverse().join('');
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('player-name').value.trim();
+            playerName = nameInput !== "" ? nameInput : "Cao thủ Hóa học";
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            questionsData = prepareShuffledQuestions(originalQuestions);
+            initMoneyLadder();
+            currentQuestionIdx = userScore = 0;
+            Object.keys(lifelines).forEach(k => { lifelines[k] = true; document.getElementById(`life-${k}`).disabled = false; });
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswering = false;
+            const q = questionsData[currentQuestionIdx];
+     
