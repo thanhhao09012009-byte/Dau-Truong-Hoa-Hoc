@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đấu Trường Hóa Học 12 - Siêu Phẩm Quiz</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Confetti for Winning -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <!-- MathJax for Chemistry Formulas -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100 min-h-screen flex flex-col font-['Montserrat',sans-serif] selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Header -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-30 shadow-xl">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                <i class="fa-solid fa-flask text-slate-950 text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg md:text-xl font-extrabold bg-gradient-to-r from-amber-400 via-amber-200 to-yellow-400 bg-clip-text text-transparent tracking-wide">ĐẤU TRƯỜNG HÓA HỌC</h1>
+                <p class="text-xs text-slate-400 font-medium">Chinh Phục Kiến Thức Hóa Học 12</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button id="btn-sound" onclick="toggleSound()" class="w-10 h-10 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl text-amber-400 flex items-center justify-center transition-all shadow-inner">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="flex-1 flex flex-col justify-center items-center p-4 md:p-6 max-w-6xl mx-auto w-full">
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center bg-slate-900/90 backdrop-blur-xl p-6 md:p-10 rounded-3xl border border-slate-800 shadow-2xl shadow-indigo-950/50 max-w-xl w-full relative overflow-hidden">
+            <div class="absolute -right-16 -top-16 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl mx-auto flex items-center justify-center shadow-xl shadow-amber-500/20 mb-4 transform hover:rotate-6 transition-transform">
+                <i class="fa-solid fa-award text-4xl text-slate-950"></i>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black text-white mb-2 tracking-wide">Đấu Trường Hóa Học 12</h2>
+            <p class="text-slate-300 text-xs md:text-sm mb-6 leading-relaxed">Chinh phục 10 câu hỏi với hệ thống trợ giúp đỉnh cao, âm thanh sống động và bảng xếp hạng cao thủ.</p>
+            
+            <!-- Nhập tên người chơi -->
+            <div class="mb-5">
+                <input type="text" id="player-name" placeholder="Nhập tên của bạn để ghi danh..." maxlength="20" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-center text-slate-100 font-semibold focus:outline-none focus:border-amber-400 text-sm shadow-inner placeholder:text-slate-500">
+            </div>
+
+            <button onclick="startGame()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-extrabold rounded-xl text-base shadow-lg shadow-amber-500/30 transform hover:-translate-y-0.5 active:translate-y-0 transition-all mb-6">
+                <i class="fa-solid fa-play mr-2"></i> BẮT ĐẦU CHƠI NGAY
+            </button>
+
+            <!-- Bảng xếp hạng thu gọn ngoài màn hình chính -->
+            <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-left">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center">
+                        <i class="fa-solid fa-medal mr-1.5"></i> Top Cao Thủ
+                    </span>
+                    <span class="text-[10px] text-slate-500">Lưu tại máy</span>
+                </div>
+                <div id="mini-leaderboard" class="space-y-1.5 text-xs">
+                    <!-- Dữ liệu sẽ được chèn bằng JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="w-full hidden grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+            
+            <!-- Left Side: Game Arena -->
+            <div class="lg:col-span-3 flex flex-col space-y-5">
+                
+                <!-- Status Bar & Lifelines -->
+                <div class="bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">CÂU HỎI <span id="current-question-num" class="text-amber-400 text-sm">1</span>/10</span>
+                        <span id="current-prize" class="text-2xl font-black text-amber-400">0 Điểm</span>
+                    </div>
+
+                    <!-- Timer Circle -->
+                    <div id="timer-display" class="w-14 h-14 rounded-2xl bg-slate-950 border-2 border-amber-400 flex items-center justify-center font-black text-2xl text-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)]">
+                        30
+                    </div>
+
+                    <!-- Lifelines Container -->
+                    <div class="flex space-x-2">
+                        <button id="life-5050" onclick="use5050()" title="Trợ giúp 50:50" class="btn-lifeline">
+                            <span class="font-extrabold text-xs">50:50</span>
+                        </button>
+                        <button id="life-phone" onclick="usePhone()" title="Gọi điện cho chuyên gia" class="btn-lifeline">
+                            <i class="fa-solid fa-phone text-sm"></i>
+                        </button>
+                        <button id="life-audience" onclick="useAudience()" title="Ý kiến khán giả" class="btn-lifeline">
+                            <i class="fa-solid fa-users text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Question Box -->
+                <div class="bg-slate-900/90 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-slate-800 shadow-xl min-h-[160px] flex items-center justify-center relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-amber-500 to-yellow-600"></div>
+                    <p id="question-text" class="text-lg md:text-xl text-center font-semibold leading-relaxed text-slate-100"></p>
+                </div>
+
+                <!-- Answers Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button id="btn-a" onclick="selectAnswer('A')" class="btn-answer p-4 rounded-xl text-left font-semibold text-slate-200 flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400 font-bold shrink-0">A</span> 
+                        <span id="text-a" class="flex-1 text-sm md:text-base"></span>
+                    </button>
+                    <button id="btn-b" onclick="selectAnswer('B')" class="btn-answer p-4 rounded-xl text-left font-semibold text-slate-200 flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400 font-bold shrink-0">B</span> 
+                        <span id="text-b" class="flex-1 text-sm md:text-base"></span>
+                    </button>
+                    <button id="btn-c" onclick="selectAnswer('C')" class="btn-answer p-4 rounded-xl text-left font-semibold text-slate-200 flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400 font-bold shrink-0">C</span> 
+                        <span id="text-c" class="flex-1 text-sm md:text-base"></span>
+                    </button>
+                    <button id="btn-d" onclick="selectAnswer('D')" class="btn-answer p-4 rounded-xl text-left font-semibold text-slate-200 flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400 font-bold shrink-0">D</span> 
+                        <span id="text-d" class="flex-1 text-sm md:text-base"></span>
+                    </button>
+                </div>
+
+                <!-- Game Actions Footer -->
+                <div class="flex justify-between pt-2">
+                    <button onclick="stopGame()" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-rose-400 border border-rose-500/30 rounded-xl text-xs md:text-sm font-semibold transition flex items-center space-x-2">
+                        <i class="fa-solid fa-flag"></i> <span>Dừng cuộc chơi</span>
+                    </button>
+                    <button onclick="restartGameConfirm()" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-sky-400 border border-sky-500/30 rounded-xl text-xs md:text-sm font-semibold transition flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate-right"></i> <span>Chơi lại từ đầu</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Side: Score Ladder -->
+            <div class="bg-slate-900/90 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                    <h3 class="font-extrabold text-slate-300 text-xs uppercase tracking-wider"><i class="fa-solid fa-chart-line text-amber-400 mr-1.5"></i> Thang Điểm</h3>
+                    <span class="text-[10px] text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Max 100đ</span>
+                </div>
+                <div id="money-ladder" class="flex flex-col-reverse text-xs font-bold space-y-1 space-y-reverse"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- GameOver / Win Modal -->
+    <div id="modal-gameover" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50 animate-fadeIn">
+        <div class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-3xl max-w-md w-full text-center shadow-2xl relative overflow-hidden">
+            <div class="w-16 h-16 bg-amber-500/10 border border-amber-500/20 rounded-2xl mx-auto flex items-center justify-center text-amber-400 text-3xl mb-4">
+                <i class="fa-solid fa-trophy" id="end-icon"></i>
+            </div>
+            <h2 id="end-title" class="text-2xl md:text-3xl font-extrabold text-white mb-1"></h2>
+            <p id="end-subtitle" class="text-slate-400 text-xs md:text-sm mb-6"></p>
+            
+            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 mb-5">
+                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">Tổng điểm tích lũy</span>
+                <span id="final-prize" class="text-3xl md:text-4xl font-black text-amber-400">0 Điểm</span>
+            </div>
+
+            <div id="explanation-box" class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/80 text-left mb-6 hidden">
+                <span class="text-xs text-amber-400 font-bold block mb-1.5"><i class="fa-solid fa-circle-info mr-1"></i> Giải thích chi tiết:</span>
+                <p id="explanation-text" class="text-xs text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <button onclick="resetGame()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-extrabold rounded-xl transition shadow-lg shadow-amber-500/20">
+                VỀ TRANG CHỦ
+            </button>
+        </div>
+    </div>
+
+    <!-- Phone Lifeline Modal (Redesigned) -->
+    <div id="modal-phone" class="fixed inset-0 bg-slate-950/85 backdrop-blur-lg hidden flex items-center justify-center p-4 z-50 animate-fadeIn">
+        <div class="bg-gradient-to-b from-slate-900 to-indigo-950 border border-sky-500/30 p-6 md:p-8 rounded-3xl max-w-md w-full text-center shadow-[0_0_30px_rgba(14,165,233,0.15)] relative overflow-hidden">
+            <div class="absolute -right-12 -top-12 w-32 h-32 bg-sky-500/10 rounded-full blur-2xl"></div>
+            
+            <div class="w-20 h-20 bg-gradient-to-br from-sky-400 to-sky-600 rounded-2xl mx-auto flex items-center justify-center text-slate-950 text-3xl mb-4 shadow-lg shadow-sky-500/30 animate-bounce">
+                <i class="fa-solid fa-headset"></i>
+            </div>
+            
+            <span class="text-xs font-bold text-sky-400 uppercase tracking-widest block mb-1">Tư Vấn Trực Tuyến</span>
+            <h3 class="text-xl font-extrabold text-white mb-4">Chuyên Gia Hóa Học 12</h3>
+            
+            <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800/80 text-left mb-6 relative">
+                <i class="fa-solid fa-quote-left text-sky-500/30 text-3xl absolute top-2 left-3 pointer-events-none"></i>
+                <p id="phone-advice" class="text-slate-200 italic text-sm leading-relaxed relative z-10 pl-2"></p>
+            </div>
+
+            <button onclick="closeModal('modal-phone')" class="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-slate-950 font-extrabold rounded-xl transition shadow-lg shadow-sky-500/20">
+                ĐÃ HIỂU, CẢM ƠN CHUYÊN GIA
+            </button>
+        </div>
+    </div>
+
+    <!-- Audience Lifeline Modal (Redesigned) -->
+    <div id="modal-audience" class="fixed inset-0 bg-slate-950/85 backdrop-blur-lg hidden flex items-center justify-center p-4 z-50 animate-fadeIn">
+        <div class="bg-gradient-to-b from-slate-900 to-purple-950 border border-purple-500/30 p-6 md:p-8 rounded-3xl max-w-md w-full text-center shadow-[0_0_30px_rgba(168,85,247,0.15)] relative overflow-hidden">
+            <div class="absolute -left-12 -top-12 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
+
+            <div class="w-20 h-20 bg-gradient-to-br from-purple-400 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-slate-950 text-3xl mb-4 shadow-lg shadow-purple-500/30">
+                <i class="fa-solid fa-users-viewfinder"></i>
+            </div>
+
+            <span class="text-xs font-bold text-purple-400 uppercase tracking-widest block mb-1">Khảo Sát Trường Quay</span>
+            <h3 class="text-xl font-extrabold text-white mb-6">Ý Kiến Khán Giả</h3>
+
+            <div class="bg-slate-950/80 p-5 rounded-2xl border border-slate-800/80 space-y-4 mb-6">
+                <div class="flex items-center space-x-3">
+                    <span class="w-6 font-black text-amber-400 text-sm">A</span>
+                    <div class="flex-1 bg-slate-900 rounded-full h-4 overflow-hidden border border-slate-800 p-0.5">
+                        <div id="bar-a" class="bg-gradient-to-r from-amber-500 to-yellow-400 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                    <span id="percent-a" class="w-10 text-right text-xs font-extrabold text-slate-200">0%</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="w-6 font-black text-amber-400 text-sm">B</span>
+                    <div class="flex-1 bg-slate-900 rounded-full h-4 overflow-hidden border border-slate-800 p-0.5">
+                        <div id="bar-b" class="bg-gradient-to-r from-amber-500 to-yellow-400 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                    <span id="percent-b" class="w-10 text-right text-xs font-extrabold text-slate-200">0%</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="w-6 font-black text-amber-400 text-sm">C</span>
+                    <div class="flex-1 bg-slate-900 rounded-full h-4 overflow-hidden border border-slate-800 p-0.5">
+                        <div id="bar-c" class="bg-gradient-to-r from-amber-500 to-yellow-400 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                    <span id="percent-c" class="w-10 text-right text-xs font-extrabold text-slate-200">0%</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="w-6 font-black text-amber-400 text-sm">D</span>
+                    <div class="flex-1 bg-slate-900 rounded-full h-4 overflow-hidden border border-slate-800 p-0.5">
+                        <div id="bar-d" class="bg-gradient-to-r from-amber-500 to-yellow-400 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+                    </div>
+                    <span id="percent-d" class="w-10 text-right text-xs font-extrabold text-slate-200">0%</span>
+                </div>
+            </div>
+
+            <button onclick="closeModal('modal-audience')" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold rounded-xl transition shadow-lg shadow-purple-600/20">
+                TIẾP TỤC TRÒ CHƠI
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+      </html>
+  
